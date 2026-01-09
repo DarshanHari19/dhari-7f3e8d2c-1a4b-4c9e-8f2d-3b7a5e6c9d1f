@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { DragDropModule, CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { AuthService } from './services/auth.service';
 import { TaskService, Task, CreateTaskDto } from './services/task.service';
@@ -28,6 +29,15 @@ import { TaskChartComponent } from './task-chart.component';
               </p>
             </div>
             <div class="flex gap-2">
+              @if (isOwnerOrAdmin()) {
+                <button
+                  (click)="goToAuditLog()"
+                  class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                  title="View audit logs"
+                >
+                  📊 Audit Logs
+                </button>
+              }
               <button
                 (click)="showKeyboardShortcuts = !showKeyboardShortcuts"
                 class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition"
@@ -456,6 +466,7 @@ import { TaskChartComponent } from './task-chart.component';
 export class Dashboard implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private taskService = inject(TaskService);
+  private router = inject(Router);
   protected themeService = inject(ThemeService);
   private keyboardService = inject(KeyboardShortcutService);
 
@@ -732,6 +743,10 @@ export class Dashboard implements OnInit, OnDestroy {
     this.authService.logout();
   }
 
+  goToAuditLog() {
+    this.router.navigate(['/audit-log']);
+  }
+
   // Role-based access control methods
   canCreateTasks(): boolean {
     const role = this.currentUser?.role;
@@ -750,5 +765,10 @@ export class Dashboard implements OnInit, OnDestroy {
 
   isViewer(): boolean {
     return this.currentUser?.role === 'viewer';
+  }
+
+  isOwnerOrAdmin(): boolean {
+    const role = this.currentUser?.role?.toUpperCase();
+    return role === 'OWNER' || role === 'ADMIN';
   }
 }
